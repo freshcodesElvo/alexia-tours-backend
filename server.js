@@ -7,8 +7,15 @@ const app = express();
 const db = require("./db");
 
 // 1. Correct CORS Middleware (ONLY USE THIS ONCE)
+// 1. Correct CORS Middleware
 app.use(cors({
-    origin: ['https://freshcodeselvo.github.io', 'http://127.0.0.1:5500'], // Allows both GitHub and local testing
+    origin: [
+        'https://alexiastours.co.ke',         // Your main domain
+        'https://www.alexiastours.co.ke',     // The www version
+        'https://freshcodeselvo.github.io',   // Your GitHub Pages
+        'http://127.0.0.1:5500',              // Local testing
+        'http://localhost:5500'               // Common local port
+    ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
 }));
