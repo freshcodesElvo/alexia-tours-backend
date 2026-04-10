@@ -10,11 +10,13 @@ const db = require("./db");
 // 1. Correct CORS Middleware
 app.use(cors({
     origin: [
-        'https://alexiastours.co.ke',         // Your main domain
-        'https://www.alexiastours.co.ke',     // The www version
-        'https://freshcodeselvo.github.io',   // Your GitHub Pages
-        'http://127.0.0.1:5500',              // Local testing
-        'http://localhost:5500'               // Common local port
+        'https://alexiastours.co.ke',
+        'https://www.alexiastours.co.ke',
+        'https://freshcodeselvo.github.io',
+        'http://127.0.0.1:5500',
+        'http://localhost:5500',
+        'http://127.0.0.1:5501', 
+        'http://localhost:5501'  
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
@@ -32,6 +34,7 @@ const messageRoutes = require("./routes/messages");
 const statsRoutes = require("./routes/stats");
 const toursRoutes = require("./routes/tours");
 const hotelBookingRoutes = require("./routes/hotelBookings");
+const loginRoute = require("./routes/login")
 
 // Use Routes
 app.use("/api/packages", packageRoutes);
@@ -44,6 +47,7 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/tours", toursRoutes);
 app.use("/api/hotel-bookings", hotelBookingRoutes);
+app.use("/api", loginRoute)
 
 // Test database route
 app.get("/test-db", async (req, res) => {
