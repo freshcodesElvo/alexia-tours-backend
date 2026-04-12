@@ -35,6 +35,7 @@ const statsRoutes = require("./routes/stats");
 const toursRoutes = require("./routes/tours");
 const hotelBookingRoutes = require("./routes/hotelBookings");
 const loginRoute = require("./routes/login")
+const reviewsRoute = require("./routes/reviews")
 
 // Use Routes
 app.use("/api/packages", packageRoutes);
@@ -48,6 +49,7 @@ app.use("/api/stats", statsRoutes);
 app.use("/api/tours", toursRoutes);
 app.use("/api/hotel-bookings", hotelBookingRoutes);
 app.use("/api", loginRoute)
+app.use("/api/reviews", reviewsRoute)
 
 // Test database route
 app.get("/test-db", async (req, res) => {
