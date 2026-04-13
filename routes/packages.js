@@ -44,9 +44,10 @@ router.get("/", async (req, res) => {
 
 
 //create a package
-router.post("/", upload.single("image"), async (req,res)=>{
-  try{
-    const{
+// create a package
+router.post("/", upload.single("image"), async (req, res) => {
+  try {
+    const {
       title,
       description,
       price,
@@ -54,34 +55,31 @@ router.post("/", upload.single("image"), async (req,res)=>{
       duration_nights,
       destination_id,
     } = req.body;
-    const image = req.file ? req.filename: null 
 
-    await db.query(
-      `INSERT INTO packages
-      (title,
-      description,
-      price,
-      duration_days,
-      duration_nights,
-      destination_id,
-      image) VALUES(?,?,?,?,?,?,?)`,
+    // FIXED: changed req.filename to req.file.filename
+    const image = req.file ? req.file.filename : null; 
+
+    await db.execute(
+      `INSERT INTO packages 
+      (title, description, price, duration_days, duration_nights, destination_id, image) 
+      VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         title,
-      description,
-      price,
-      duration_days,
-      duration_nights,
-      destination_id,
-      image
+        description,
+        price,
+        duration_days,
+        duration_nights,
+        destination_id,
+        image
       ]
-    )
-    res.json({message: "Package created"})
-  }catch(error){
-    console.error(error)
-    res.status(500).json({error: "An error occured while creating a package, please try again"})
-  }
-})
+    );
 
+    res.json({ message: "Package created successfully" });
+  } catch (error) {
+    console.error("Create Error:", error);
+    res.status(500).json({ error: "An error occurred while creating a package" });
+  }
+});
 
 //delete a packege
 router.delete("/:id", async(req,res)=>{
