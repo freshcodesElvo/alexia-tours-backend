@@ -32,20 +32,18 @@ router.post("/submit", async (req, res) => {
 });
 
 // 3. GET all reviews (For Admin Dashboard)
+// GET all for admin (Simplified to verify connection)
 router.get("/admin/all", async (req, res) => {
     try {
-        // Joining with bookings lets you see the destination the review was for
-        const sql = `
-            SELECT r.*, b.destination 
-            FROM reviews r 
-            LEFT JOIN bookings b ON r.booking_id = b.id 
-            ORDER BY r.created_at DESC
-        `;
+        // Just get reviews for now, we will add the JOIN back once this works
+        const sql = "SELECT * FROM reviews ORDER BY created_at DESC";
         const [results] = await db.execute(sql);
-        res.json(results);
+        
+        // Safety check: if results is null, send an empty array
+        res.json(Array.isArray(results) ? results : []);
     } catch (error) {
-        console.error("Admin Fetch Error:", error);
-        res.status(500).json({ error: "An error occurred" });
+        console.error("Database Fetch Error:", error);
+        res.status(500).json({ error: "Database query failed", details: error.message });
     }
 });
 
