@@ -15,7 +15,7 @@ const sendReviewRequest = async (email, name, bookingId) => {
                 <div style="font-family: sans-serif; text-align: center;">
                     <h2>Asante for choosing Alexia Tours!</h2>
                     <p>Hi ${name}, we hope you enjoyed your adventure. Could you share your experience with us?</p>
-                    <a href="https://alexia-tours.netlify.app/leave-review.html?booking=${bookingId}&name=${name}" 
+                    <a href="https://alexiastours.co.ke/leave-review.html?booking=${bookingId}&name=${name}" 
                        style="background: #fbbf24; padding: 12px 20px; color: black; text-decoration: none; border-radius: 8px; font-weight: bold;">
                         Leave a Review
                     </a>
