@@ -50,6 +50,8 @@ app.use("/api/tours", toursRoutes);
 app.use("/api/hotel-bookings", hotelBookingRoutes);
 app.use("/api", loginRoute)
 app.use("/api/reviews", reviewsRoute)
+app.post("/api/refresh", loginRoute);   
+app.post("/api/logout", loginRoute);    
 
 // Test database route
 app.get("/test-db", async (req, res) => {
