@@ -48,10 +48,10 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/tours", toursRoutes);
 app.use("/api/hotel-bookings", hotelBookingRoutes);
-app.use("/api", loginRoute)
+app.use("/api/auth", loginRoute);  // ✅ fixed
+
 app.use("/api/reviews", reviewsRoute)
-app.post("/api/refresh", loginRoute);   
-app.post("/api/logout", loginRoute);    
+
 
 // Test database route
 app.get("/test-db", async (req, res) => {
@@ -76,6 +76,21 @@ app.get("/", (req, res) => {
 
 // Server start
 const PORT = process.env.PORT || 5000;
+app.get("/debug-routes", (req, res) => {
+    const routes = [];
+    app.router.stack.forEach(layer => {
+        if (layer.route) {
+            routes.push(layer.route.path);
+        } else if (layer.name === 'router' && layer.handle.stack) {
+            layer.handle.stack.forEach(handler => {
+                if (handler.route) {
+                    routes.push(handler.route.path);
+                }
+            });
+        }
+    });
+    res.json(routes);
+});
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });
