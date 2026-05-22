@@ -23,49 +23,61 @@ function generateSlug(text) {
 }
 
 // 1. GET ALL BLOGS (For Frontend Grid)
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
     const sql = "SELECT id, title, slug, summary, category, image_path, created_at FROM blogs ORDER BY created_at DESC";
-    db.query(sql, (err, results) => {
-        if (err) return res.status(500).json({ error: err.message });
+    try {
+        const [results] = await db.execute(sql);
         res.json(results);
-    });
+    } catch (err) {
+        console.error("Error fetching blogs:", err);
+        res.status(500).json({ error: err.message });
+    }
 });
 
-// 2. GET SINGLE BLOG BY SLUG (Excellent for SEO routing)
-router.get('/:slug', (req, res) => {
+// 2. GET SINGLE BLOG BY SLUG
+router.get('/:slug', async (req, res) => {
     const sql = "SELECT * FROM blogs WHERE slug = ?";
-    db.query(sql, [req.params.slug], (err, results) => {
-        if (err) return res.status(500).json({ error: err.message });
-        if (results.length === 0) return res.status(404).json({ message: "Blog not found" });
+    try {
+        const [results] = await db.execute(sql, [req.params.slug]);
+        if (results.length === 0) {
+            return res.status(404).json({ message: "Blog not found" });
+        }
         res.json(results[0]);
-    });
+    } catch (err) {
+        console.error("Error fetching single blog:", err);
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // 3. POST NEW BLOG (Admin Panel Action)
-router.post('/create', upload.single('blog_image'), (req, res) => {
+router.post('/create', upload.single('blog_image'), async (req, res) => {
     const { title, summary, content, category } = req.body;
     const slug = generateSlug(title);
     const image_path = req.file ? `uploads/blogs/${req.file.filename}` : null;
 
     const sql = "INSERT INTO blogs (title, slug, summary, content, category, image_path) VALUES (?, ?, ?, ?, ?, ?)";
-    db.query(sql, [title, slug, summary, content, category, image_path], (err, result) => {
-        if (err) {
-            if (err.code === 'ER_DUP_ENTRY') {
-                return res.status(400).json({ error: "An article with a similar title already exists." });
-            }
-            return res.status(500).json({ error: err.message });
-        }
+    try {
+        const [result] = await db.execute(sql, [title, slug, summary, content, category, image_path]);
         res.status(201).json({ message: "Blog posted successfully!", blogId: result.insertId });
-    });
+    } catch (err) {
+        console.error("Error creating blog:", err);
+        if (err.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({ error: "An article with a similar title already exists." });
+        }
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // 4. DELETE BLOG
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
     const sql = "DELETE FROM blogs WHERE id = ?";
-    db.query(sql, [req.params.id], (err, result) => {
-        if (err) return res.status(500).json({ error: err.message });
+    try {
+        await db.execute(sql, [req.params.id]);
         res.json({ message: "Article removed successfully." });
-    });
+    } catch (err) {
+        console.error("Error deleting blog:", err);
+        res.status(500).json({ error: err.message });
+    }
 });
 
 module.exports = router;
