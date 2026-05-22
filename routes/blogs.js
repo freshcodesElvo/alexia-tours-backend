@@ -3,10 +3,19 @@ const router = express.Router();
 const db = require('../db'); 
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs'); // Import Node's filesystem module
 
-// Multer Setup for Blog Images
+// 1. Ensure upload directories exist safely in production
+const uploadDir = path.join(__dirname, '../uploads/blogs/');
+if (!fs.existsSync(uploadDir)) {
+    // recursive: true ensures it builds both /uploads and /uploads/blogs if missing
+    fs.mkdirSync(uploadDir, { recursive: true }); 
+}
+
+// 2. Multer Setup for Blog Images
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
+        // Use the safe directory path
         cb(null, 'uploads/blogs/');
     },
     filename: (req, file, cb) => {
@@ -18,11 +27,12 @@ const upload = multer({ storage: storage });
 // Helper function to generate clean SEO slugs
 function generateSlug(text) {
     return text.toString().toLowerCase().trim()
-        .replace(/'/g, '')         // Remove apostrophes completely (Kenya's -> kenyas)
-        .replace(/&/g, '-and-')     // Handle ampersands safely
-        .replace(/[\s\W-]+/g, '-'); // Replace spaces and all other non-word characters with a single hyphen
+        .replace(/'/g, '')         
+        .replace(/&/g, '-and-')     
+        .replace(/[\s\W-]+/g, '-'); 
 }
 
+// ... the rest of your routes (GET, POST, DELETE) stay exactly the same ...
 // 1. GET ALL BLOGS (For Frontend Grid)
 router.get('/', async (req, res) => {
     const sql = "SELECT id, title, slug, summary, category, image_path, created_at FROM blogs ORDER BY created_at DESC";
