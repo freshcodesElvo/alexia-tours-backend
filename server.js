@@ -36,6 +36,7 @@ const toursRoutes = require("./routes/tours");
 const hotelBookingRoutes = require("./routes/hotelBookings");
 const loginRoute = require("./routes/login")
 const reviewsRoute = require("./routes/reviews")
+const blogsRoute = require("./routes/blogs");
 
 // Use Routes
 app.use("/api/packages", packageRoutes);
@@ -48,7 +49,8 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/tours", toursRoutes);
 app.use("/api/hotel-bookings", hotelBookingRoutes);
-app.use("/api/auth", loginRoute);  // ✅ fixed
+app.use("/api/auth", loginRoute);  
+app.use("/api/blogs", blogsRoute);
 
 app.use("/api/reviews", reviewsRoute)
 
