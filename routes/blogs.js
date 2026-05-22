@@ -18,8 +18,9 @@ const upload = multer({ storage: storage });
 // Helper function to generate clean SEO slugs
 function generateSlug(text) {
     return text.toString().toLowerCase().trim()
-        .replace(/&/g, '-and-')
-        .replace(/[\s\W-]+/g, '-');
+        .replace(/'/g, '')         // Remove apostrophes completely (Kenya's -> kenyas)
+        .replace(/&/g, '-and-')     // Handle ampersands safely
+        .replace(/[\s\W-]+/g, '-'); // Replace spaces and all other non-word characters with a single hyphen
 }
 
 // 1. GET ALL BLOGS (For Frontend Grid)
