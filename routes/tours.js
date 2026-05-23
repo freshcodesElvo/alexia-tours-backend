@@ -30,20 +30,37 @@ router.get("/", async (req, res) => {
     }
 });
 
-// 3. GET SINGLE TOUR (Public)
+// 3. GET SINGLE TOUR ALONG WITH ITS ITINERARY (Public)
 router.get("/:id", async (req, res) => {
     try {
+        // Query A: Fetch the parent tour record
         const [rows] = await db.query(
             `SELECT * FROM tours WHERE id=?`,
             [req.params.id]
         );
+        
         if (rows.length === 0) {
             return res.status(404).json({ message: "Tour not found" });
         }
-        res.json(rows[0]);
+        
+        const tourData = rows[0];
+
+        // Query B: Fetch child itinerary days sorted chronologically
+        const [itineraryRows] = await db.query(
+            `SELECT day_number, day_title, day_description, accommodation, meals_included 
+             FROM tour_itineraries 
+             WHERE tour_id=? 
+             ORDER BY day_number ASC`,
+            [req.params.id]
+        );
+
+        // Attach the array onto our parent object safely
+        tourData.itinerary = itineraryRows;
+
+        res.json(tourData);
     } catch (error) {
         console.error("Fetch Single Error:", error);
-        res.status(500).json({ error: "An error occurred" });
+        res.status(500).json({ error: "An error occurred fetching tour data details" });
     }
 });
 
