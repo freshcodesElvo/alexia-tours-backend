@@ -63,16 +63,20 @@ router.get('/:id', async (req, res) => {
 });
 
 // 3. GET SINGLE BLOG BY SLUG (Fallback Frontend Public Link Routing)
-router.get('/:slug', async (req, res) => {
-    const sql = "SELECT * FROM blogs WHERE slug = ?";
+// CHANGE THIS: Added 'next' as the third argument context
+router.get('/:id', async (req, res, next) => {
+    // If the parameter is a slug string (not a number), drop out and pass control down
+    if (isNaN(req.params.id)) return next(); 
+
+    const sql = "SELECT * FROM blogs WHERE id = ?";
     try {
-        const [results] = await db.execute(sql, [req.params.slug]);
+        const [results] = await db.execute(sql, [req.params.id]);
         if (results.length === 0) {
-            return res.status(404).json({ message: "Blog not found" });
+            return res.status(404).json({ message: "Journal entry not found" });
         }
         res.json(results[0]);
     } catch (err) {
-        console.error("Error fetching single blog:", err);
+        console.error("Error fetching blog by ID:", err);
         res.status(500).json({ error: err.message });
     }
 });
