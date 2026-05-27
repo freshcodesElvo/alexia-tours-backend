@@ -64,29 +64,40 @@ router.post("/", upload.single("image"), async (req, res) => {
 });
 
 // Update destination
+// Update destination - Safe, Defensive Implementation
 router.put("/:id", upload.single("image"), async (req, res) => {
+    const { id } = req.params;
+    
     try {
-        const { name, description } = req.body;
+        // 1. Fetch the absolute current state from the database first
+        const [currentRows] = await db.query("SELECT name, description, image FROM destinations WHERE id = ?", [id]);
+        
+        if (currentRows.length === 0) {
+            return res.status(404).json({ error: "Destination record not found." });
+        }
+        
+        const existingRecord = currentRows[0];
 
+        // 2. Fall back to existing database values if the request fields arrive blank or missing
+        const finalName = req.body.name !== undefined ? req.body.name : existingRecord.name;
+        const finalDescription = req.body.description !== undefined ? req.body.description : existingRecord.description;
+        
+        // 3. Determine image path context
+        let finalImage = existingRecord.image; // Default to what is already in DB
         if (req.file) {
-            // New image uploaded → use Cloudinary URL
-            const image = req.file.path;
-            await db.query(
-                "UPDATE destinations SET name=?, description=?, image=? WHERE id=?",
-                [name, description, image, req.params.id]
-            );
-        } else {
-            // No new image → keep existing
-            await db.query(
-                "UPDATE destinations SET name=?, description=? WHERE id=?",
-                [name, description, req.params.id]
-            );
+            finalImage = req.file.path; // Overwrite if a fresh binary file is supplied
         }
 
-        res.json({ message: "Destination updated" });
+        // 4. Fire a unified UPDATE query that is completely safe
+        await db.query(
+            "UPDATE destinations SET name = ?, description = ?, image = ? WHERE id = ?",
+            [finalName, finalDescription, finalImage, id]
+        );
+
+        res.json({ message: "Destination updated successfully without asset loss!" });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Update failed" });
+        console.error("Critical failure during destination update operational sequence:", error);
+        res.status(500).json({ error: "Internal validation update process failed." });
     }
 });
 
