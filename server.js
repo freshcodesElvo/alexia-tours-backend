@@ -54,6 +54,8 @@ app.use("/api/blogs", blogsRoute);
 app.use("/api/itineraries", itinerariesRoute);
 app.use("/api/reviews", reviewsRoute)
 
+app.use("/api/explore-places", destinationRoutes);
+
 
 // Test database route
 app.get("/test-db", async (req, res) => {
