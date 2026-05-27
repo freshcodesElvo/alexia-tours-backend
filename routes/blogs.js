@@ -101,22 +101,33 @@ router.post('/create', upload.single('blog_image'), async (req, res) => {
 });
 
 // 5. UPDATE EXISTING BLOG DATA RECORD (Admin Save Mutation Changes Action)
-router.put('/:id', async (req, res) => {
-    const { title, summary, content, category, imageUrl } = req.body;
+// 5. UPDATE EXISTING BLOG DATA RECORD (Handles Optional Image Upload Stream)
+router.put('/:id', upload.single('blog_image'), async (req, res) => {
+    const { title, summary, content, category } = req.body;
     const { id } = req.params;
-    
-    // Dynamically recompute the clean URL reference slug strings based on modifications
     const updatedSlug = generateSlug(title);
 
-    // Keep the incoming manually referenced image fallback path link string value if no fresh asset payload uploads
-    const sql = `
-        UPDATE blogs 
-        SET title = ?, slug = ?, summary = ?, content = ?, category = ?, image_path = ? 
-        WHERE id = ?
-    `;
-    
     try {
-        const [result] = await db.execute(sql, [title, updatedSlug, summary, content, category, imageUrl, id]);
+        let image_path = null;
+
+        // Condition A: Author chose a brand-new file image binary asset stream
+        if (req.file) {
+            image_path = `uploads/blogs/${req.file.filename}`;
+        } else {
+            // Condition B: Fall back and retrieve the existing path value so it isn't overwritten
+            const [currentRecord] = await db.execute("SELECT image_path FROM blogs WHERE id = ?", [id]);
+            if (currentRecord.length > 0) {
+                image_path = currentRecord[0].image_path;
+            }
+        }
+
+        const sql = `
+            UPDATE blogs 
+            SET title = ?, slug = ?, summary = ?, content = ?, category = ?, image_path = ? 
+            WHERE id = ?
+        `;
+        
+        const [result] = await db.execute(sql, [title, updatedSlug, summary, content, category, image_path, id]);
         
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: "Target operational database entry could not be identified." });
