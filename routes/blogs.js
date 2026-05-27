@@ -32,7 +32,6 @@ function generateSlug(text) {
         .replace(/[\s\W-]+/g, '-'); 
 }
 
-// ... the rest of your routes (GET, POST, DELETE) stay exactly the same ...
 // 1. GET ALL BLOGS (For Frontend Grid)
 router.get('/', async (req, res) => {
     const sql = "SELECT id, title, slug, summary, category, image_path, created_at FROM blogs ORDER BY created_at DESC";
@@ -45,7 +44,25 @@ router.get('/', async (req, res) => {
     }
 });
 
-// 2. GET SINGLE BLOG BY SLUG
+// 2. GET SINGLE BLOG BY ID (For Admin Pre-populating Edit Modal Context)
+router.get('/:id', async (req, res) => {
+    // Check if the parameter is a numeric ID; if it's not a number, pass it downstream to the slug route
+    if (isNaN(req.params.id)) return next(); 
+
+    const sql = "SELECT * FROM blogs WHERE id = ?";
+    try {
+        const [results] = await db.execute(sql, [req.params.id]);
+        if (results.length === 0) {
+            return res.status(404).json({ message: "Journal entry not found" });
+        }
+        res.json(results[0]);
+    } catch (err) {
+        console.error("Error fetching blog by ID:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 3. GET SINGLE BLOG BY SLUG (Fallback Frontend Public Link Routing)
 router.get('/:slug', async (req, res) => {
     const sql = "SELECT * FROM blogs WHERE slug = ?";
     try {
@@ -60,7 +77,7 @@ router.get('/:slug', async (req, res) => {
     }
 });
 
-// 3. POST NEW BLOG (Admin Panel Action)
+// 4. POST NEW BLOG (Admin Panel Action)
 router.post('/create', upload.single('blog_image'), async (req, res) => {
     const { title, summary, content, category } = req.body;
     const slug = generateSlug(title);
@@ -79,7 +96,39 @@ router.post('/create', upload.single('blog_image'), async (req, res) => {
     }
 });
 
-// 4. DELETE BLOG
+// 5. UPDATE EXISTING BLOG DATA RECORD (Admin Save Mutation Changes Action)
+router.put('/:id', async (req, res) => {
+    const { title, summary, content, category, imageUrl } = req.body;
+    const { id } = req.params;
+    
+    // Dynamically recompute the clean URL reference slug strings based on modifications
+    const updatedSlug = generateSlug(title);
+
+    // Keep the incoming manually referenced image fallback path link string value if no fresh asset payload uploads
+    const sql = `
+        UPDATE blogs 
+        SET title = ?, slug = ?, summary = ?, content = ?, category = ?, image_path = ? 
+        WHERE id = ?
+    `;
+    
+    try {
+        const [result] = await db.execute(sql, [title, updatedSlug, summary, content, category, imageUrl, id]);
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Target operational database entry could not be identified." });
+        }
+        
+        res.json({ message: "Blog publication metrics successfully saved and deployed live!" });
+    } catch (err) {
+        console.error("Database tracking context error modifying entry metadata:", err);
+        if (err.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({ error: "Modifying this title clashes with an alternate matching destination asset record URL slug index." });
+        }
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 6. DELETE BLOG
 router.delete('/:id', async (req, res) => {
     const sql = "DELETE FROM blogs WHERE id = ?";
     try {
