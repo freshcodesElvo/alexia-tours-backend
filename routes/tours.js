@@ -111,6 +111,7 @@ router.put("/:id", verifyToken, upload.single("image"), async (req, res) => {
         }
 
         query += ` WHERE id=?`;
+        
         params.push(req.params.id);
 
         const [result] = await db.query(query, params);

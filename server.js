@@ -8,17 +8,33 @@ const db = require("./db");
 
 // 1. Correct CORS Middleware (ONLY USE THIS ONCE)
 // 1. Correct CORS Middleware
+const allowedOrigins = [
+    "https://alexia-tours-hzpk.vercel.app",
+    "https://alexiastours.co.ke",
+    "https://www.alexiastours.co.ke",
+    "https://freshcodeselvo.github.io",
+    "http://127.0.0.1:5500",
+    "http://localhost:5500",
+    "http://127.0.0.1:5501",
+    "http://localhost:5501"
+];
+
 app.use(cors({
-    origin: [
-        'https://alexiastours.co.ke',
-        'https://www.alexiastours.co.ke',
-        'https://freshcodeselvo.github.io',
-        'http://127.0.0.1:5500',
-        'http://localhost:5500',
-        'http://127.0.0.1:5501', 
-        'http://localhost:5501'  
-    ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE' , 'PATCH' , 'OPTIONS'],
+    origin: function (origin, callback) {
+        // Allow requests that don't have an Origin header
+        // e.g. Postman or server-to-server requests
+        if (!origin) {
+            return callback(null, true);
+        }
+
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+
+        console.log("Blocked by CORS:", origin);
+        return callback(new Error("Not allowed by CORS"));
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     credentials: true
 }));
 
