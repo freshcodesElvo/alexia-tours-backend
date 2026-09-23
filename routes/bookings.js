@@ -26,34 +26,54 @@ router.get("/", async (req, res) => {
 });
 
 // 2. CREATE NEW BOOKING (Now includes Payment Tracking)
+// 2. CREATE NEW BOOKING (Now includes Payment Tracking)
 router.post("/", async (req, res) => {
     try {
-        const { 
-            full_name, email, phone, nationality, 
-            adults, children, start_date, tour_name, 
+        const {
+            full_name,
+            email,
+            phone,
+            nationality,
+            adults,
+            children,
+            start_date,
+            tour_name,
             special_requests,
             transaction_id, // From IntaSend
-            payment_method  // M-Pesa/Card
+            payment_method   // M-Pesa/Card
         } = req.body;
 
-        const query = `INSERT INTO bookings 
-            (full_name, email, phone, nationality, adults, children, start_date, tour_name, special_requests, status, transaction_id, payment_method) 
+        const query = `INSERT INTO bookings
+            (full_name, email, phone, nationality, adults, children, start_date, tour_name, special_requests, status, transaction_id, payment_method)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
         // Default status is 'pending' until the webhook confirms payment
-        await db.query(query, [
-            full_name, email, phone, nationality, 
-            adults, children, start_date, tour_name, 
-            special_requests, 
-            'pending', 
-            transaction_id || null, 
-            payment_method || 'pending'
+        const [result] = await db.query(query, [
+            full_name,
+            email,
+            phone,
+            nationality,
+            adults,
+            children,
+            start_date,
+            tour_name,
+            special_requests,
+            "pending",
+            transaction_id || null,
+            payment_method || "pending"
         ]);
 
-        res.status(201).json({ message: "Booking created successfully!" });
+        res.status(201).json({
+            message: "Booking created successfully!",
+            bookingId: result.insertId
+        });
+
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: "Database error: " + error.message });
+
+        res.status(500).json({
+            error: "Database error: " + error.message
+        });
     }
 });
 
