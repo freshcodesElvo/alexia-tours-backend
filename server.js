@@ -64,7 +64,11 @@ const itinerariesRoute = require("./routes/itineraries");
 app.use("/api/packages", packageRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/destinations", destinationRoutes);
-app.use("/uploads", express.static("uploads"));
+//app.use("/uploads", express.static("uploads"));
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "uploads"))
+);
 app.use("/api/hotels", hotelRoutes);
 app.use("/api/visa-services", visaRoutes);
 app.use("/api/messages", messageRoutes);
