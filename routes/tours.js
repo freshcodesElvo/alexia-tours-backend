@@ -2,12 +2,13 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 const multer = require("multer");
+const path = require("path");
 const verifyToken = require("../middleware/auth");
 
-// 1. Storage Configuration
+// Storage Configuration
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, "uploads/");
+        cb(null, path.join(__dirname, "..", "uploads"));
     },
     filename: (req, file, cb) => {
         const unique = Date.now() + "-" + file.originalname;
