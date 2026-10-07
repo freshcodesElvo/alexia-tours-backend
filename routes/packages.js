@@ -45,7 +45,15 @@ router.get("/", async (req, res) => {
 // Get single package
 router.get("/:id", async (req, res) => {
     try {
-        const [rows] = await db.query("SELECT * FROM packages WHERE id = ?", [req.params.id]);
+        const [rows] = await db.query(`
+    SELECT 
+        packages.*,
+        destinations.name AS destination_name
+    FROM packages
+    LEFT JOIN destinations
+        ON packages.destination_id = destinations.id
+    WHERE packages.id = ?
+`, [req.params.id]);
         if (rows.length === 0) return res.status(404).json({ message: "Package not found" });
         res.json(rows[0]);
     } catch (error) {
