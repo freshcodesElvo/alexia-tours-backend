@@ -65,9 +65,13 @@ app.use("/api/packages", packageRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/destinations", destinationRoutes);
 //app.use("/uploads", express.static("uploads"));
+// app.use(
+//   "/uploads",
+//   express.static(path.join(__dirname, "uploads"))
+// );
 app.use(
   "/uploads",
-  express.static(path.join(__dirname, "uploads"))
+  express.static("/app/uploads")
 );
 app.use("/api/hotels", hotelRoutes);
 app.use("/api/visa-services", visaRoutes);
