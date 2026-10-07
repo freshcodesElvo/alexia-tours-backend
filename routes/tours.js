@@ -97,34 +97,31 @@ router.post("/", verifyToken, upload.single("image"), async (req, res) => {
 });
 
 // 5. UPDATE TOUR (Protected)
-router.put("/:id", verifyToken, upload.single("image"), async (req, res) => {
+// 5. UPDATE TOUR IMAGE ONLY (Protected)
+router.put("/:id/image", verifyToken, upload.single("image"), async (req, res) => {
     try {
-        const { title, description, category, price, duration, is_trending } = req.body;
-        const trendingValue = (is_trending === 'true' || is_trending === true) ? 1 : 0;
-
-        // Build the dynamic query so we don't overwrite existing image with NULL
-        let query = `UPDATE tours SET title=?, description=?, category=?, price=?, duration=?, is_trending=?`;
-        let params = [title, description, category, price, duration, trendingValue];
-
-        if (req.file) {
-            query += `, image_path=?`;
-            params.push(`./uploads/${req.file.filename}`);
+        if (!req.file) {
+            return res.status(400).json({ message: "No image uploaded" });
         }
 
-        query += ` WHERE id=?`;
-        
-        params.push(req.params.id);
+        const image_path = `./uploads/${req.file.filename}`;
 
-        const [result] = await db.query(query, params);
+        const [result] = await db.query(
+            `UPDATE tours SET image_path=? WHERE id=?`,
+            [image_path, req.params.id]
+        );
 
         if (result.affectedRows === 0) {
             return res.status(404).json({ message: "Tour not found" });
         }
 
-        res.status(200).json({ message: "Tour updated successfully" });
+        res.status(200).json({
+            message: "Tour image updated successfully",
+            image_path
+        });
     } catch (error) {
-        console.error("Update Error:", error);
-        res.status(500).json({ error: "Tour update failed" });
+        console.error("Image Update Error:", error);
+        res.status(500).json({ error: "Tour image update failed" });
     }
 });
 
